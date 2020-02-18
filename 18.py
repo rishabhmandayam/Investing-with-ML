@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from sklearn import svm, preprocessing
 import pandas as pd
 from matplotlib import style
+import statistics
+
 style.use("ggplot")
 
 FEATURES =  ['DE Ratio',
@@ -48,12 +50,14 @@ def Build_Data_Set():
     data_df = pd.read_csv("key_stats_acc_perf_WITH_NA.csv") #created in other file
     
     #data_df = data_df[:100]
+    data_df = data_df.replace("NaN",-999).replace("N/A",-999)
+    
     data_df = data_df.reindex(np.random.permutation(data_df.index))
-    data_df = data_df.replace("NaN",0).replace("N/A",0)
+    
 
     
     X = np.array(data_df[FEATURES].values)#.tolist())
-    
+    X = np.nan_to_num(X) 
     y = (data_df["Status"]
          .replace("underperform",0)
          .replace("outperform",1)
@@ -61,13 +65,22 @@ def Build_Data_Set():
 
     X = preprocessing.scale(X)
 
-    
-    return X,y
+    Z = np.array(data_df[["stock_p_change","sp500_p_change"]])
+
+    Z = np.nan_to_num(Z) 
+    return X,y,Z
 
 def Analysis():
     test_size = 1000
+
+    invest_amount = 10000
+    total_invests = 0
+    if_market = 0 #just buying the SP500
+    if_strat = 0 #investing with strategy
+
     
-    X, y = Build_Data_Set()
+    
+    X, y, Z= Build_Data_Set()
     print(len(X))
     
     clf = svm.SVC(kernel="linear", C = 1.0)
@@ -79,6 +92,31 @@ def Analysis():
     for x in range(1, test_size+1):
         if predictions[x] == y[x]:
             correct_count += 1
+        if predictions[x] == 1:
+            invest_return  = invest_amount + (invest_amount *(Z[-x][0]/100))
+            market_return  = invest_amount + (invest_amount *(Z[-x][1]/100))
+
+            total_invests +=1
+            if_market += market_return
+            if_strat += invest_return
+        
     print("Accuracy:", (correct_count/test_size)*100)
+
+    print("Total Trades:", total_invests)
+    print("Ending with Strategy:", if_strat)
+    print("Ending with Market:", if_market)
+
+    compared = ((if_strat - if_market) / if_market)*100
+    do_nothing = total_invests * invest_amount
+
+    avg_market = ((if_market - do_nothing)/do_nothing)*100
+    avg_strat = ((if_strat - do_nothing)/do_nothing)*100
+
+    
+    print("Compared to market, we earn",str(compared)+"% more")
+    print("Average investment return:", str(avg_strat)+"%")
+    print("Average market return:", str(avg_market)+"%")
+          
+    
 
 Analysis()
