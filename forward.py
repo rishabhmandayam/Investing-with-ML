@@ -1,4 +1,3 @@
-Learn more or give us feedback
 import pandas as pd
 import os
 import time
@@ -178,7 +177,7 @@ def Forward(
     except Exception as e:
       pass
 
-  # df.to_csv("forward_sample_NO_NA.csv")
-  df.to_csv("forward_sample_WITH_NA.csv")
+  df.to_csv("forward_sample_NO_NA.csv")
+  #df.to_csv("forward_sample_WITH_NA.csv")
 
 Forward()
