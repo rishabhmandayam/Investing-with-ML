@@ -125,7 +125,7 @@ def Analysis():
    # print("Average investment return:", str(avg_strat)+"%")
    # print("Average market return:", str(avg_market)+"%")
 
-    data_df = pd.read_csv("forward_sample_NO_NA.csv")
+    data_df = pd.read_csv("forward_sample_WITH_NA.csv")
     data_df = data_df.replace("NaN",0).replace("N/A",0)
     X = np.array(data_df[FEATURES].values)#.tolist())
     X = np.nan_to_num(X) 
